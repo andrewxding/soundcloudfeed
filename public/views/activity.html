@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+  	<base href="/">
+     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular.min.js"></script>
+     
+   		
+  </head>
+  <body >
+    <h1 ng-repeat="song in songs">
+    	<div class="container container-fluid" id="activities">
+	    	<div class="songEntry">
+		    	<div class="username">{{song.username}}</div>
+		    	<!-- link to profile add to text -->
+		    	<div class"songtitle">{{song.title}}</div>
+		    	<div class"songartist">{{song.artist}}</div>
+	    	</div>
+	    </div>
+    </h1>
+  </body>
+</html>
+
