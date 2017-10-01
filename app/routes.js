@@ -3,12 +3,22 @@ var Follow     = require('./models/user');
 var mongoose = require('mongoose');
 var followship = mongoose.connection.collection("Follow");
 var collection = mongoose.connection.collection('users');
-var amqp = require('amqplib/callback_api');
 
-
-module.exports = function(app, passport) {
+module.exports = function(app, passport, io) {
+    console.log("EXPORTED")
+    
+    io.on('connection', function (socket) {
+      socket.emit('news', { hello: 'world' });
+      socket.on('my other event', function (data) {
+        console.log(data);
+      });
+    });
 
 // normal routes ===============================================================
+    // app.get('/stream', isLoggedIn, function(req, res){
+    //     console.log("hery")
+    //     res.sendFile('/home/andrewxding/Documents/soundcloudfeed/public/views/activity.html');
+    // });
     app.get("/loggedin", function(req, res) {
           res.json(req.isAuthenticated() ? req.user : '0');
     });
@@ -95,12 +105,9 @@ module.exports = function(app, passport) {
         
     });
     app.get('/*',function(req,res){
-        console.log('fuck you');
-        res.sendFile('/home/andrew/cloudfeed/easy-node-authentication/public/views/stream.html');
+        //CHANGE LATER TO GET PATH
+        res.sendFile('/home/andrewxding//Documents/soundcloudfeed/public/views/stream.html');//CONFIG THIS
     });
-
-
-
 //     // LOGOUT ==============================
 //     app.get('/logout', function(req, res) {
 //         console.log('3');
@@ -260,9 +267,9 @@ module.exports = function(app, passport) {
           },
           function(err, req, res, next) {
             // handle error
-            console.log('fail1');
+            console.log('fail31');
             if (req.xhr) { 
-                console.log('fail');
+                console.log('fai3l');
                 return res.json(err); 
             }
             return res.redirect('/signup');

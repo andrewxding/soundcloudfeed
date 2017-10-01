@@ -1,6 +1,4 @@
 app.controller("activityCtrl",[ '$scope', '$http', function ($scope, $http) {
-    $scope.msg = "I love Paris";
-    $scope.records = ["Andrew", "amy", "miki"];
     //make this an onload for the page
     $http.get('/api/activity').then(
           function(res) {

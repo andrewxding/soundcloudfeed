@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <title>REApp</title>
   	<base href="/">
-
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular-route.min.js"></script>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+
     <link rel="stylesheet" href="views/css/activity.css">
     <script src="../stream.js"></script>
     <script src="../controllers/controllers.js"></script>
@@ -17,5 +19,13 @@
   <body ng-app="app" ng-controller="mainCtrl">
   	<div class="ng-view"></div>
   </body>
+  <script>
+  var socket = io('http://localhost:8080');
+  socket.on('news', function (data) {
+    console.log(data);
+    socket.emit('my other event', { my: 'data' });
+  });
+</script>
+
 </html>
 
