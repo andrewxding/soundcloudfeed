@@ -55,9 +55,3 @@ require('./app/routes.js')(app, passport, io); // load our routes and pass in ou
 server.listen(port);
 console.log('The magic happens on port ' + port);
 
-io.sockets.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
-  socket.on('my other event', function (data) {
-    console.log(data);
-  });
-});

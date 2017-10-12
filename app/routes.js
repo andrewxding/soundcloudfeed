@@ -5,23 +5,37 @@ var followship = mongoose.connection.collection("Follow");
 var collection = mongoose.connection.collection('users');
 
 module.exports = function(app, passport, io) {
-    console.log("EXPORTED")
-    
-    io.on('connection', function (socket) {
-      socket.emit('news', { hello: 'world' });
-      socket.on('my other event', function (data) {
-        console.log(data);
-      });
+    var socketToUser = {};//optimize into hash map
+    var userToSocket = {};
+    io.sockets.on('connection', function (socket) {
+        socket.on('new', function(data) {
+            console.log("new socket", socket.id, data);
+            if (data.user in socketToUser)
+                socketToUser[data.user].append(socket.id);
+            userToSocket[data.user] = [socket.id];
+            socketToUser[socket.id] = data.user;
+        });
+        socket.on('disconnect', function(){
+            console.log('socket disconnect');
+            if(socket.id in userToSocket){
+                var user = socketToUser[socket.id];
+                console.log("deleting", socket.id, user);
+                delete userToSocket[userToSocket[user].indexOf(socket.id)];
+            }
+            delete socketToUser[socket.id];
+        })
     });
-
 // normal routes ===============================================================
     // app.get('/stream', isLoggedIn, function(req, res){
     //     console.log("hery")
     //     res.sendFile('/home/andrewxding/Documents/soundcloudfeed/public/views/activity.html');
     // });
     app.get("/loggedin", function(req, res) {
-          res.json(req.isAuthenticated() ? req.user : '0');
+          res.json(req.isAuthenticated() ?  req.user : '0');
     });
+    app.get("/sockets", function(req,res){
+        console.log(sockets);
+    })
     app.get('/api/activity', isLoggedIn, function(req, res){/////change log in auth stuff alter
 
         followship.findOne({'username':req.user.local.username}, function(err, dbuser){
@@ -117,33 +131,25 @@ module.exports = function(app, passport, io) {
 
 
 //     //change to patch later#################33
-    app.patch('/api/patch', isLoggedIn, function(req,res){
-        amqp.connect('amqp://localhost', function(err, conn) {
-          conn.createChannel(function(err, ch) {
-              var q = 'hello';
-              var msg = req.body.newsong;
-              ch.assertQueue(q, {durable: false});
-              // Note: on Node 6 Buffer.from(msg) should be used
-              ch.sendToQueue(q, new Buffer(msg));
-                 console.log(" [x] Sent %s", msg);
-           });
-           setTimeout(function() { conn.close(); process.exit(0) }, 500);
-        });
-
-
-        console.log("patching", req.user.local.username);
+    app.patch('/newSong', isLoggedIn, function(req,res){
+     console.log("patching", req.user.local.username);
         var query = {'local.username': req.user.local.username};
-        console.log(req.body);
+        if(req.user.local.username in userToSocket){
+            userToSocket[req.user.local.username].forEach(function(socketid){
+                console.log(socketid);
+                if(io.sockets.connected[socketid]){
+                    io.sockets.connected[socketid].emit('activity', req.body.newsong);
+                }
+            });
+        }
 
         var set = {  $set: {'lastsong.title': req.body.newsong, 'lastsong.date': "now"}};
-        //console.log(moment.format());
-        //var set = {  $set: {'lastsong': {'title': req.newsong, 'date':moment.format()}}};
-
         collection.updateOne(query, set);
         res.setHeader('stat', '200');
         res.json({data: "body"});
         //#######TODO check for errors
     });
+
 //     // PROFILE SECTION =========================
 //     app.get('/profile/:username', isLoggedIn, function(req, res) {
 //         //console.log(req.params);
@@ -216,10 +222,8 @@ module.exports = function(app, passport, io) {
         app.post('/api/login',
           passport.authenticate('local-login', { failWithError: true }),
           function(req, res, next) {
-            console.log('success1', req.user.local.username)
             // handle success
             if (req.xhr) { 
-                console.log('success');
                 return res.json({ user: req.user}); 
             }
             res.body = req.user;

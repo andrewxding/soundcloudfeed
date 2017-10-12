@@ -1,5 +1,8 @@
-app.controller("activityCtrl",[ '$scope', '$http', function ($scope, $http) {
+app.controller("activityCtrl",[ '$scope', '$http', '$rootScope', function ($scope, $http, $rootScope) {
     //make this an onload for the page
+    $rootScope.socket.on('activity', function(data){
+      console.log(data);
+    })
     $http.get('/api/activity').then(
           function(res) {
           	//console.log('response', res);
@@ -18,7 +21,7 @@ app.controller("activityCtrl",[ '$scope', '$http', function ($scope, $http) {
           	console.log('ACTIVITY GET ERROR');
           });
  }]);
-app.controller('loginCtrl', [ '$scope', '$window', function ($scope, $window, $rootScope) {
+app.controller('loginCtrl', [ '$scope', '$window', '$rootScope', '$location', function ($scope, $window, $rootScope, $location) {
   //submit
 
   $scope.login = function () {
@@ -31,12 +34,11 @@ app.controller('loginCtrl', [ '$scope', '$window', function ($scope, $window, $r
                 success: function(data) {
                     if (data.user) {
                        console.log(data);
-
                        $window.location = '/stream';
                     }
                     else {
-                        alert('Successfully not posted.');
-                        $window.location = '/login'
+                      alert('Successfully not posted.');
+                      $location.path('/login');
                     }
                 }
             });
@@ -99,22 +101,14 @@ app.controller('profileCtrl', ['$scope',  '$routeParams', '$http', '$rootScope',
           	}
     	);
     }
-  	
+  	//TODO: add some $watch on something https://www.sitepoint.com/understanding-angulars-apply-digest/ for follow unfollow
 }]);
 
-app.controller('mainCtrl', ['$scope',  '$location', function ($scope, $location) {
-
-  // $scope.$watch(Auth.isLoggedIn, function (value, oldValue) {
-  //   console.log("Main controller");
-  //   if(!value && oldValue) {
-  //     console.log("Disconnect");
-  //     $location.path('/login');
-  //   }
-
-  //   if(value) {
-  //     console.log("Connect");
-  //     //Do something when the user is connected
-  //   }
-
-  // }, true);
+app.controller('mainCtrl', ['$scope',  '$location', '$rootScope', function ($scope, $location, $rootScope) {
+  console.log("main");
+    // $rootScope.socket = io.connect('http://localhost:8080');
+    //   $rootScope.socket.on('connect', function(){
+    //   console.log("connected", $rootScope.socket.io.engine.id);
+    //  })
+      // socket.emit('register', { my: 'data' });
 }]);
